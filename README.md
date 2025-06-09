@@ -1,1 +1,7 @@
-# code-samples
+# Code Samples
+
+Welcome to my coding samples. 
+
+
+
+

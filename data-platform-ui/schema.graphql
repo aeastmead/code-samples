@@ -1,0 +1,692 @@
+# A date object
+scalar DateTime
+
+# An Int or String union type (Int | String)
+scalar IntOrString
+
+type Query {
+  # dataset category queries
+  datasetCategories: [DatasetCategory]
+
+  dataSubsetById(dataSubsetId: Int!): DataSubset
+
+  dataStoreResourceById(dataStoreResourceId: Int!): DataStoreResource
+
+  people(query: String!, limit: Int = 25): [Person!]
+
+  # New catalog search. Returns Data Subsets
+  search(
+    query: String
+    page: Int = 1
+    pageSize: Int = 16
+    selectedFilters: [SearchSelectedFilterInput!]
+  ): SearchResult!
+  # New catalog search. Returns Data Subsets
+  searchV3(
+    query: String
+    page: Int = 1
+    pageSize: Int = 30
+    selectedFilters: [SearchSelectedFilterInput!] = []
+    sortField: SearchV3SortField = RELEVANCY
+    sortDirection: SearchV3SortDirection = DESC
+  ): SearchV3Result!
+
+  resourceFieldTags(
+    tagTypeId: Int
+    dataStoreResourceFieldId: Int
+  ): [ResourceFieldTag]
+
+  resourceTags(tagTypeId: Int, dataStoreResourceId: Int): [ResourceTag]
+
+  datasetPolicyNotes(dataSubsetId: Int!): [DatasetPolicyNoteV2!]
+
+  policyNoteTypes: [PolicyNoteType]!
+
+  searchFacets: [SearchFacet!]!
+
+  searchV3Facets: [SearchFacet!]!
+
+  # Search Bar Dropdown options
+  searchV3EntityTypeFacet: SearchFacet!
+
+  resourceTypes: [ResourceType!]!
+
+  me: UserInfo!
+
+  # For the Dataset Classification Questionnaire
+  datasetClassificationQuestionnaire: DataClassificationQuestionnaireData!
+
+  datasetClassificationQuestionnaireSelections(
+    bri: String
+  ): DataObjectQuestionnaireSelections
+
+  # DataSubset Id
+  datasetClassificationById(dataSubsetId: Int!): DatasetClassification
+}
+
+type Mutation {
+  contactUs(
+    # summary for the DRQS
+    summary: String!
+    # message for the DRQS
+    message: String!
+  ): Int
+
+  patchDataStoreResourceField(
+    dataStoreResourceFieldId: Int!
+    input: PatchDataStoreResourceFieldInput
+  ): DataStoreResourceField
+
+  patchDataSubset(dataSubsetId: Int!, input: PatchDataSubsetInput!): DataSubset
+
+  patchDataSubsetV2(dataSubsetId: Int!, input: PatchDataSubsetV2Input!): DataSubset!
+
+  createDataset(input: CreateDatasetInput): Int!
+  createDatasetV2(input: CreateDatasetV2Input): Int!
+
+  patchResource(resourceId: Int!, input: PatchResourceInput!): DataStoreResource
+
+  registerResource(input: RegisterResourceInput!): RegisterResourceResult!
+
+  registerWithMDC(dataSubsetId: Int!): Int
+
+  # Registering Resource to an empty Data Subset
+  registerResourceWithOwners(
+    input: RegisterResourceWithOwnersInput!
+  ): RegisterResourceResult!
+
+  createDatasetPolicyNote(
+    input: CreateDatasetPolicyNoteInput!
+  ): DatasetPolicyNote!
+
+  patchDatasetPolicyNote(
+    datasetPolicyNoteId: Int!
+    input: PatchDatasetPolicyNoteInput!
+  ): DatasetPolicyNote!
+  deleteDatasetPolicyNote(datasetPolicyNoteId: Int!): DatasetPolicyNote!
+
+
+  createDatasetPolicyNoteV2(
+    input: CreateDatasetPolicyNoteInput!
+  ): DatasetPolicyNoteV2!
+
+  patchDatasetPolicyNoteV2(
+    datasetPolicyNoteId: Int!
+    input: PatchDatasetPolicyNoteInput!
+  ): DatasetPolicyNoteV2!
+  deleteDatasetPolicyNoteV2(datasetPolicyNoteId: Int!): DatasetPolicyNoteV2!
+
+  deleteDataset(datasetId: Int!) : Int!
+
+  updateDatasetDataClassification(
+    input: UpdateDatasetDataClassificationInput!
+  ): Boolean
+}
+
+input UpdateDatasetDataClassificationInput {
+  bri: String!
+  useCaseIdList: [Int!]!
+  personalDataTypeIdList: [Int!]
+  pendingUseCaseList: [PendingUseCaseInput]
+}
+
+input PendingUseCaseInput {
+  categoryId: Int!
+  useCaseText: String!
+  categoryName: String
+  categoryDescription: String
+  uuid: Int
+}
+
+input CreateDatasetInput {
+  name: String!
+  description: String!
+  approverIds: [Int!]!
+  datasetCategoryId: Int!
+  engineeringOwnerGroupId: Int!
+  engineeringOwnerIds: [Int!]!
+  dataOwnerIds: [Int!]!
+  dataOwnerGroupId: Int!
+  pwhoId: Int
+  pvfxObjectName: String
+  pvfxValueName: String
+  pvfxObjectId: Int
+  pvfxValueId: Int
+  pvfFunction: String
+  pvfLevel: Int
+}
+
+input CreateDatasetV2Input {
+  name: String!
+  description: String!
+  datasetCategoryId: Int!
+  approverIds: [Int!]
+  engineeringOwnerGroupId: Int
+  engineeringOwnerIds: [Int!]
+  dataOwnerIds: [Int!]
+  pwhoId: Int
+  pvfxObjectName: String
+  pvfxValueName: String
+  pvfFunction: String
+  pvfLevel: Int
+}
+
+input PatchResourceInput {
+  alias: String
+  description: String
+  engineeringOwnerIds: [Int]
+  engineeringOwnerGroupId: Int
+  dataOwnerIds: [Int]
+  dataOwnerGroupId: Int
+  daysToRetain: Int
+  daysToArchive: Int
+  retentionNotes: String
+  retentionResourceFieldId: Int
+  addResourceTagIds: [Int!]
+  removeResourceTagIds: [Int!]
+}
+
+input PatchDataStoreResourceFieldInput {
+  description: String
+  isRetentionColumn: Boolean
+  addResourceFieldTagIds: [Int!]
+  removeResourceFieldTagIds: [Int!]
+}
+
+input PatchDataSubsetInput {
+  ownerIds: [Int!]
+  description: String
+  displayName: String
+  dataOwnerGroupId: Int
+  dataOwnerIds: [Int!]
+  engineeringOwnerGroupId: Int
+  engineeringOwnerIds: [Int!]
+}
+
+input PatchDataSubsetV2Input {
+  description: String
+  displayName: String
+  approverIds: [Int!]
+  isRestricted: Boolean
+}
+
+input RegisterResourceInput {
+  dataSubsetId: Int!
+  dataStoreTypeId: Int!
+  dataStoreLocationName: String!
+  dataStoreResourceName: String!
+}
+
+input RegisterResourceWithOwnersInput {
+  dataSubsetId: Int!
+  dataStoreTypeId: Int!
+  dataStoreLocationName: String!
+  dataStoreResourceName: String!
+  engineeringOwnerGroupId: Int!
+  engineeringOwnerIds: [Int!]!
+  dataOwnerIds: [Int!]!
+  dataOwnerGroupId: Int!
+}
+
+input CreateDatasetPolicyNoteInput {
+  dataSubsetId: Int!
+  policyNoteTypeId: Int!
+  link: String
+  contactId: Int!
+  note: String!
+}
+
+input PatchDatasetPolicyNoteInput {
+  policyNoteTypeId: Int
+  link: String
+  contactId: Int
+  note: String
+}
+input SearchSelectedFilterInput {
+  id: String!
+  selectedValues: [String!]!
+}
+
+
+
+type Person {
+  id: Int!
+  name: String
+}
+
+type WebLink {
+  text: String!
+  url: String!
+}
+
+type DatasetCategory {
+  # unique id of this category
+  datasetCategoryId: Int!
+  # compact name, to be used in systems that restrict whitespace usage
+  compactName: String!
+  # display name, to be used for display & user interaction
+  displayName: String!
+}
+
+type OwnershipInfo {
+  # owners
+  owners: [Person!]!
+  # web link (once migrated to new model, deprecate the previous attribute)
+  webLink: WebLink
+  unmanaged: Boolean
+  canEdit: Boolean!
+}
+
+
+type DatasetEntity {
+  datasetId: Int!
+  datasetCategoryId: Int!
+  datasetCategory: DatasetCategory
+}
+
+type UserInfo {
+  userId: Int!
+  pvfs: [String!]
+  admin: Boolean!
+}
+# PVFX ids
+type ExternalPrivilegeId {
+  externalPrivilegeObject: String!
+  externalPrivilegeValue: String!
+  pvfLevel: Int!
+  pvfFunction: String!
+  unmanaged: Boolean @deprecated
+  canEdit: Boolean!
+  # access link
+  webLink: BLink!
+  dataClassification: [DataClassificationType]
+}
+
+type DatasetOwnership {
+  pwhoId: Int
+  pwhoWebLink: String
+  unmanaged: Boolean
+  dataOwnerGroupId: Int @deprecated
+  dataOwners: [Person]
+  engineeringOwners: [Person]
+  engineeringOwnerGroupId: Int
+}
+
+
+type DataSubset {
+  dataSubsetId: Int!
+  datasetId: Int!
+  displayName: String!
+  compactName: String!
+  description: String!
+  dataset: DatasetEntity
+
+  ownershipInfo: OwnershipInfo
+  datasetOwnership: DatasetOwnership!
+  dataStores: [DataStore]
+
+  primaryDataStoreId: Int
+
+  primaryDataStore: DataStore
+
+  externalPrivilegeId: ExternalPrivilegeId
+
+  # Shows if user has privileges to access this Data Subset
+  canAccess: Boolean
+
+
+  isRestricted: Boolean!
+  canRestrictState: CanRestrictState!
+
+  canEdit: Boolean!
+  canDelete: Boolean!
+  canEditDevOwnership: Boolean!
+  datasetPolicyNotes: [DatasetPolicyNote!]
+  datasetPolicyNotesV2: [DatasetPolicyNoteV2!]
+  datasetMetadataHealthScores: [DatasetMetadataHealthScore!]!
+
+  resources: [DataStoreResource!]
+  hasDataStore: Boolean!
+
+  mdcLinkURL: String
+  mdcRegistration: Boolean
+
+  datasetClassification: DatasetClassification
+  riskScore: RiskScore
+}
+
+type DatasetPolicyNoteV2 {
+  datasetPolicyNoteId: Int! # readonly notes will have negative fake numbers
+  canEdit: Boolean!
+  contactPeople: [Person!]!
+  dataSubset: DataSubset!
+  dataSubsetId: Int!
+  links: [DisplayLink]
+  note: String!
+  policyNoteType: PolicyNoteType!
+  policyNoteTypeId: Int!
+  createdAt: DateTime!
+}
+
+interface DisplayLink {
+  label: String!
+  url: String!
+}
+
+type AnchorLink implements DisplayLink {
+  label: String!
+  url: String!
+}
+
+type BLink implements DisplayLink {
+  label: String!
+  url: String!
+  terminalFunction: String!
+}
+
+type DatasetMetadataHealthScore {
+  label: String!
+  score: Int!
+}
+
+type DataStoreOwnership {
+  dataStoreId: Int!
+  ownerGroup: Int @deprecated
+  engineeringOwnerGroupId: Int
+  owners: [Person] @deprecated
+  engineeringOwners: [Person]
+  dataOwners: [Person]
+  dataOwnerGroupId: Int
+  businessOwners: [Person]
+  dataStore: DataStore @deprecated
+}
+
+type DataStore {
+  dataStoreId: Int
+  name: String!
+  description: String!
+  dataSubsets: [DataSubset]
+  dataStoreOwnership: DataStoreOwnership
+  canEdit: Boolean
+  dataStoreResources: [DataStoreResource]
+  dataStoreTypeId: Int
+}
+
+type Pagination {
+  currentPage: Int!
+  pageSize: Int!
+  totalItems: Int!
+}
+
+type Cluster {
+  clusterId: Int!
+  name: String!
+  description: String!
+}
+
+type DataStoreLocation {
+  dataStoreLocationId: Int!
+  clusterId: Int
+  name: String!
+  cluster: Cluster
+  dataStoreTypeId: Int
+}
+
+# Embedded report type meta data
+type ExternalReportType {
+  externalReportTypeId: Int!
+  # Title used by the UI
+  name: String!
+}
+
+# Embedded reports url
+type ExternalReport {
+  externalReportTypeId: Int!
+  url: String
+}
+
+type DataStoreResource {
+  dataStoreResourceId: Int!
+  dataStoreId: Int
+  dataStoreLocationId: Int!
+  name: String!
+  alias: String
+  # User description or Comment
+  description: String
+  dataStore: DataStore @deprecated
+  dataStoreResourceFields: [DataStoreResourceField]
+  dataStoreLocation: DataStoreLocation
+  canEdit: Boolean
+  externalReports: [ExternalReport!]
+  daysToRetain: Int
+  daysToArchive: Int
+  retentionNotes: String
+
+  dataOwnerGroupId: Int
+  dataOwners: [Person]
+  engineeringOwners: [Person]
+  engineeringOwnerGroupId: Int
+
+  dataset: DataSubset
+  datasetId: Int
+
+  resourceTags(tagTypeId: Int): [ResourceTag!]
+}
+
+type DataStoreResourceField {
+  dataStoreResourceFieldId: Int!
+  dataStoreResourceId: Int!
+  name: String!
+  type: String!
+  # User description or Comment
+  description: String
+  dataStoreResource: DataStoreResource
+  synchronized: Boolean
+  synchronizedDetails: String
+  canEdit: Boolean
+  isRetentionColumn: Boolean
+
+  resourceFieldTags(tagTypeId: Int): [ResourceFieldTag!]
+}
+
+type TagType {
+  tagTypeId: Int!
+  name: String!
+}
+
+type ResourceFieldTag {
+  resourceFieldTagId: Int!
+  tagType: TagType!
+  tagTypeId: Int!
+  name: String!
+}
+
+type ResourceTag {
+  resourceTagId: Int!
+  tagType: TagType!
+  tagTypeId: Int!
+  name: String!
+}
+
+type SearchFilterValueCount {
+  value: String!
+  count: Int!
+}
+
+# Solr Facet
+type SearchFilterCount {
+  id: String!
+  # Only values with at least 1 count
+  valueCounts: [SearchFilterValueCount!]!
+}
+
+type SearchResult {
+  nodes: [DataSubset!]
+  totalCount: Int!
+  # Only filters with valueCounts
+  filterCounts: [SearchFilterCount!]
+}
+
+type SearchV3Result {
+  entities: [SearchEntity]
+  totalCount: Int!
+  # Only filters with valueCounts
+  filterCounts: [SearchFilterCount!]
+}
+
+enum ResourceFailedVerificationCode {
+  TYPE_NOT_VERIFIABLE
+  ALREADY_LINKED
+  NOT_FOUND
+  INVALID_REQUEST_FORMAT
+}
+
+type ResourceFailedVerification {
+  isValid: Boolean!
+  code: ResourceFailedVerificationCode!
+  message: String!
+}
+
+union RegisterResourceResult = DataStoreResource | ResourceFailedVerification
+
+type PolicyNoteType {
+  policyNoteTypeId: Int!
+  name: String!
+}
+
+type DatasetPolicyNote {
+  datasetPolicyNoteId: Int!
+  policyNoteTypeId: Int!
+  dataSubsetId: Int!
+  note: String!
+  link: String
+  linkFunction: String
+  policyNoteType: PolicyNoteType!
+  contactId: Int!
+  contactPerson: Person
+  dataSubset: DataSubset!
+  canEdit: Boolean!
+  createdAt: DateTime!
+  createdBy: Int!
+  createdByPerson: Person!
+}
+
+type SearchFacet {
+  id: String!
+  label: String!
+  options: [SearchFacetOption]!
+}
+
+type SearchFacetOption {
+  value: String!
+  label: String!
+}
+
+type ResourceType {
+  id: Int!
+  name: String!
+  canBeRegistered: Boolean!
+  locationNameLabel: String!
+  resourceNameLabel: String!
+  locationNameExample: String
+  resourceNameExample: String
+}
+
+type DataClassificationType {
+  dataClassificationTypeName: String!
+  description: String
+  ranking: Int
+}
+
+type DataClassificationQuestionnaireData {
+  categoryList: [DataClassificationCategory!]!
+  personalDataTypeList: [DataClassificationPersonalDataType!]!
+}
+
+type DataClassificationCategory {
+  categoryId: Int!
+  categoryName: String
+  description: String
+  useCaseList: [DataClassificationUseCase!]
+}
+
+type DataClassificationUseCase {
+  useCaseId: Int!
+  useCaseName: String!
+  description: String!
+  restrictionLevel: [DataClassificationRestrictionLevel]
+  categoryId: Int
+}
+
+type DataClassificationRestrictionLevel {
+  restrictionLevelId: Int
+  restrictionLevelName: String!
+  description: String
+}
+
+type DataClassificationPersonalDataType {
+  personalDataTypeId: Int
+  personalDataTypeName: String!
+  description: String!
+}
+
+type PendingUseCase {
+  categoryId: Int!
+  useCaseText: String!
+  categoryName: String
+  categoryDescription: String
+  uuid: Int
+}
+
+type DataObjectQuestionnaireSelections {
+  categories: [Int]
+  useCases: [Int]
+  personalDataTypeIdList: [Int]
+}
+
+type DatasetClassification {
+  useCaseIds: [Int]
+  personalDataTypeIds: [Int]
+}
+
+type SearchEntity {
+  id: Int!
+  entityType: SearchEntityType!
+  name: String!
+  alias: String
+  description: String
+  datasetCategoryName: String!
+  approverNames: [String!]
+  resourceTypeIds: [Int!]
+}
+
+type RiskScore {
+  score: Int!
+  category: String!
+  hyperlink: String!
+}
+
+enum SearchEntityType {
+  DATASET
+  RESOURCE
+}
+
+enum SearchV3SortDirection {
+  ASC
+  DESC
+}
+
+enum SearchV3SortField {
+  RELEVANCY
+  CREATED
+  NAME
+}
+enum CanRestrictState {
+  # hide controller
+  FALSE
+  # show controller but disable it
+  DISABLED
+  # show toggle enabled
+  TRUE
+}
+
